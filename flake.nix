@@ -190,13 +190,23 @@
         devShells.default = pkgsCross.mkShell {
           name = "papermario-dx";
           venvDir = "./venv";
-          # Disable nixpkgs hardening flags (stackprotector, fortify, pic, etc.)
-          # that the cross-compiler wrapper injects. These change MIPS code
-          # generation and would cause Linux builds to differ from Windows.
           NIX_HARDENING_ENABLE = "";
+
+          # --- STAR ROD FIX: Add mesa.drivers here ---
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [
+            libglvnd
+            libGL
+            mesa.drivers
+            xorg.libX11
+            xorg.libXext
+            xorg.libXcursor
+            xorg.libXrandr
+            xorg.libXxf86vm
+          ]);
+
           packages = with pkgs; [
-            ninja # needed for ninja -t compdb in configure, as n2 doesn't support it
-            n2 # same as ninja, but with prettier output
+            ninja
+            n2
             zlib
             libyaml
             python3
@@ -204,16 +214,33 @@
             ccache
             git
             iconv
-            gcc # for n64crc
+            gcc
             (callPackage ./tools/pigment64.nix {})
             (callPackage ./tools/crunch64.nix {})
             star-rod.packages.${system}.default
             clang-tools
             treefmt
-          ] ++ (if pkgs.stdenv.isLinux then [ pkgs.flips ] else []); # https://github.com/NixOS/nixpkgs/issues/373508
+
+            # --- STAR ROD FIX: Add mesa.drivers here too ---
+            libglvnd
+            libGL
+            mesa.drivers
+            xorg.libX11
+            xorg.libXext
+            xorg.libXcursor
+            xorg.libXrandr
+            xorg.libXxf86vm
+
+          ] ++ (if pkgs.stdenv.isLinux then [ pkgs.flips ] else []);
+
           shellHook = ''
             rm -f ./ver/us/baserom.z64 && cp ${baseRom} ./ver/us/baserom.z64
             export PAPERMARIO_LD="${binutils2_39}/bin/mips-linux-gnu-ld"
+
+            # --- STAR ROD FIX: Driver pointers ---
+            export LIBGL_ALWAYS_SOFTWARE=1
+            export _JAVA_AWT_WM_NONREPARENTING=1
+            export LIBGL_DRIVERS_PATH="${pkgs.mesa.drivers}/lib/dri"
 
             # Install python packages from cached wheels (offline)
             virtualenv venv --quiet
