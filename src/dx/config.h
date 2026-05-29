@@ -28,7 +28,7 @@
 #define DX_SKIP_DEMO 1
 
 /// Map to load when starting a new game.
-#define NEW_GAME_MAP_ID "charisk_house"
+#define NEW_GAME_MAP_ID "csk_hse"
 
 /// Entry to use when starting a new game.
 #define NEW_GAME_ENTRY_ID kmr_20_ENTRY_0
