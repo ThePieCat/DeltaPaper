@@ -15,7 +15,6 @@ EvtScript EVS_Main = {
     Set(LVar0, Ref(EVS_BindExitTriggers))
     Exec(EnterWalk)
 
-    EndSwitch
     Return
     End
 };
